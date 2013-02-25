@@ -24,7 +24,6 @@ class EXT_Captcha
 	public function __construct()
 	{
 		! session_id() AND session_start();
-		// sys::load_config('extensions');
 		sys::set_config_items(&$this, 'captcha');
 	}
 
@@ -32,22 +31,22 @@ class EXT_Captcha
 
 	public function init()
 	{
-		sys::$lib->form->set_field($this->field_name , 'input', $this->field_label, 'trim|strip_tags|required|callback[ext.captcha.validation]');
+		lib('form')->set_field($this->field_name , 'input', $this->field_label, 'trim|strip_tags|required|callback[ext.captcha.validation]');
 	}
 
 	//--------------------------------------------------------------------------
 
 	public function field($extra = '')
 	{
-		sys::$lib->form->set_value($this->field_name, '', TRUE);
-		return sys::$lib->form->field($this->field_name, '', $extra);
+		lib('form')->set_value($this->field_name, '', TRUE);
+		return lib('form')->field($this->field_name, '', $extra);
 	}
 
 	//--------------------------------------------------------------------------
 
 	public function label()
 	{
-		return sys::$lib->form->label($this->field_name);
+		return lib('form')->label($this->field_name);
 	}
 
 	//--------------------------------------------------------------------------
@@ -70,8 +69,7 @@ class EXT_Captcha
 
 			if (isset(sys::$lib->form))
 			{
-				//sys::$lib->form->set_value($this->field_name(), '', TRUE);
-				sys::$lib->form->set_error_message('callback[ext.captcha.validation]', 'Не верный защитный код');
+				lib('form')->set_error_message('callback[ext.captcha.validation]', 'Не верный защитный код');
 			}
 
 			return $result;
