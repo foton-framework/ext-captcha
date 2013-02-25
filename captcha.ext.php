@@ -5,7 +5,7 @@
 class EXT_Captcha
 {
 	//--------------------------------------------------------------------------
-	
+
 	public $foreground_color = '000';
 	public $background_color = 'FFF';
 	public $allowed_symbols  = '0123456789';
@@ -15,80 +15,80 @@ class EXT_Captcha
 	public $amplitude        = 5;
 	public $no_spaces        = false;
 	public $jpeg_quality     = 90;
-	
+
 	public $field_name  = 'captcha';
 	public $field_label = 'Защитный код';
-	
+
 	//--------------------------------------------------------------------------
-	
+
 	public function __construct()
 	{
 		! session_id() AND session_start();
-		sys::load_config('extensions');
+		// sys::load_config('extensions');
 		sys::set_config_items(&$this, 'captcha');
 	}
-	
+
 	//--------------------------------------------------------------------------
-	
+
 	public function init()
 	{
 		sys::$lib->form->set_field($this->field_name , 'input', $this->field_label, 'trim|strip_tags|required|callback[ext.captcha.validation]');
 	}
-	
+
 	//--------------------------------------------------------------------------
-	
+
 	public function field($extra = '')
 	{
 		sys::$lib->form->set_value($this->field_name, '', TRUE);
 		return sys::$lib->form->field($this->field_name, '', $extra);
 	}
-	
+
 	//--------------------------------------------------------------------------
-	
+
 	public function label()
 	{
 		return sys::$lib->form->label($this->field_name);
 	}
-	
+
 	//--------------------------------------------------------------------------
-	
+
 	public function image($extra = '')
 	{
 		if ($extra) $extra = ' ' . $extra;
 		return "<img src='/captcha/' alt=''{$extra} />";
 	}
-	
+
 	//--------------------------------------------------------------------------
-	
+
 	public function validation(&$value)
 	{
 		if (isset($_SESSION[$this->field_name()]))
 		{
 			$result = $_SESSION[$this->field_name()] == $value;
-			
+
 			$value = '';
-			
+
 			if (isset(sys::$lib->form))
 			{
 				//sys::$lib->form->set_value($this->field_name(), '', TRUE);
 				sys::$lib->form->set_error_message('callback[ext.captcha.validation]', 'Не верный защитный код');
 			}
-			
+
 			return $result;
 		}
-		
+
 		return FALSE;
 	}
-	
+
 	//--------------------------------------------------------------------------
-	
+
 	public function field_name()
 	{
 		return $this->field_name;
 	}
-	
+
 	//--------------------------------------------------------------------------
-	
+
 	private function _hex2rgb($hex)
 	{
 		if ($hex{0} == '#') $hex = substr($hex, 1);
@@ -97,9 +97,9 @@ class EXT_Captcha
 		foreach ($rgb as &$row) $row = hexdec($row);
 		return $rgb;
 	}
-	
+
 	//--------------------------------------------------------------------------
-	
+
 	function generate_image(){
 
 		$alphabet = "0123456789abcdefghijklmnopqrstuvwxyz"; # do not change without changing font files!
@@ -107,34 +107,34 @@ class EXT_Captcha
 		# symbols used to draw CAPTCHA
 		$allowed_symbols = $this->allowed_symbols; #digits
 		//$allowed_symbols = "23456789abcdeghkmnpqsuvxyz"; #alphabet without similar symbols (o=0, 1=l, i=j, t=f)
-		
+
 		# folder with fonts
-		$fontsdir = 'fonts';	
-		
+		$fontsdir = 'fonts';
+
 		# CAPTCHA string length
 		$length = mt_rand($this->length[0], $this->length[1]);
 		//$length = 6;
-		
+
 		# CAPTCHA image size (you do not need to change it, whis parameters is optimal)
 		$width  = $this->width;
 		$height = $this->height;
-		
+
 		# symbol's vertical fluctuation amplitude divided by 2
 		$fluctuation_amplitude = $this->amplitude;
-		
+
 		# increase safety by prevention of spaces between symbols
 		$no_spaces = $this->no_spaces;
-		
+
 		# show credits
 		$show_credits = false; # set to false to remove credits line. Credits adds 12 pixels to image height
 		$credits = ''; # if empty, HTTP_HOST will be shown
-		
+
 		# CAPTCHA image colors (RGB, 0-255)
 		$foreground_color = $this->_hex2rgb($this->foreground_color);
 		$background_color = $this->_hex2rgb($this->background_color);
 		//$foreground_color = array(mt_rand(0,100), mt_rand(0,100), mt_rand(0,100));
 		//$background_color = array(mt_rand(200,255), mt_rand(200,255), mt_rand(200,255));
-		
+
 		# JPEG quality of CAPTCHA image (bigger is better quality, but larger file size)
 		$jpeg_quality = $this->jpeg_quality;
 
@@ -147,10 +147,10 @@ class EXT_Captcha
 				}
 			}
 		    closedir($handle);
-		}	
-	
+		}
+
 		$alphabet_length=strlen($alphabet);
-		
+
 		do{
 			// generating random key_string
 			while(true){
@@ -160,9 +160,9 @@ class EXT_Captcha
 				}
 				if(!preg_match('/cp|cb|ck|c6|c9|rn|rm|mm|co|do|cl|db|qp|qb|dp|ww/', $this->key_string)) break;
 			}
-			
+
 			$_SESSION[$this->field_name()] = $this->key_string;
-			
+
 			$font_file=$fonts[mt_rand(0, count($fonts)-1)];
 			$font=imagecreatefrompng($font_file);
 			imagealphablending($font, true);
@@ -248,7 +248,7 @@ class EXT_Captcha
 		$img2=imagecreatetruecolor($width, $height+($show_credits?12:0));
 		$foreground=imagecolorallocate($img2, $foreground_color[0], $foreground_color[1], $foreground_color[2]);
 		$background=imagecolorallocate($img2, $background_color[0], $background_color[1], $background_color[2]);
-		imagefilledrectangle($img2, 0, 0, $width-1, $height-1, $background);		
+		imagefilledrectangle($img2, 0, 0, $width-1, $height-1, $background);
 		imagefilledrectangle($img2, 0, $height, $width-1, $height+12, $foreground);
 		$credits=empty($credits)?$_SERVER['HTTP_HOST']:$credits;
 		imagestring($img2, 2, $width/2-imagefontwidth(2)*strlen($credits)/2, $height-2, $credits, $background);
@@ -313,12 +313,12 @@ class EXT_Captcha
 				imagesetpixel($img2, $x, $y, imagecolorallocate($img2, $newred, $newgreen, $newblue));
 			}
 		}
-		
-		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT'); 
-		header('Cache-Control: no-store, no-cache, must-revalidate'); 
-		header('Cache-Control: post-check=0, pre-check=0', FALSE); 
+
+		header('Expires: Mon, 26 Jul 1997 05:00:00 GMT');
+		header('Cache-Control: no-store, no-cache, must-revalidate');
+		header('Cache-Control: post-check=0, pre-check=0', FALSE);
 		header('Pragma: no-cache');
-		
+
 		if(function_exists("imagejpeg")){
 			header("Content-Type: image/jpeg");
 			imagejpeg($img2, null, $jpeg_quality);
